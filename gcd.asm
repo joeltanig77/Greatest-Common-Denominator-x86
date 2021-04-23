@@ -76,15 +76,17 @@ getInt:
 	    MOV		ebp, esp            ; Make stack pointer = to the base pointer
 
         mov     ecx,[ebp+8] ; This is the string I hope
-        ;push    ecx
+        push    ecx
         ;call    printf
         ;add     esp, 4
 
 
 
-        mov     DH, 1  ; unsigned int digitValue = 1; ; TODO: start here
-        mov     DL, 0  ; unsigned int result = 0;
-        mov     eax, ecx ; char* digit = string;
+        mov     eax, 1  ; unsigned int digitValue = 1; ; TODO: start here and start converting everything to 32 bit....
+        push    eax
+        mov     ebx, 0  ; unsigned int result = 0;
+        push    ebx
+        mov     eax, ebx ; char* digit = string;
 
 
     ; do func stuff
@@ -117,23 +119,28 @@ while2:
 
         ;// use the MUL (dword) instruction here (unsigned multiply)
         ;// be careful to understand its operands and results
-      ; mov      AL, byte[ecx]
-      ; sub      AL, 48  ; (*digit - '0')
-      ; push     ecx
+       mov      AL, byte[ecx]
+       sub      AL, 48  ; (*digit - '0')
+       push     ecx
 
-      ; movzx      eax, AL        ; TODO: when you MUL, it only takes one arg and the second arg and stored in AL for 8 bit and different ones for each size each staring with AX (result)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-      ; movzx      ecx, DH       ; digitvalue
 
-      ; mul        ecx           ; (*digit - '0') * digitValue
 
-       ;mov        AL, byte[eax]       ; This is result i think       ; TODO: Something is wrong here
+       movzx      eax, byte[ecx]        ; TODO: when you MUL, it only takes one arg and the second arg and stored in AL for 8 bit and different ones for each size each staring with AX (result)
 
-       ;mov        AH, 10
+       movzx      ecx, DH       ; digitvalue
 
-       ;mul        DH                  ; digitValue *= 10;
+       mul        ecx           ; (*digit - '0') * digitValue
 
-      ; pop        ecx
+       mov        DL, byte[eax]       ; This is result i think       ; TODO: Something is wrong here
+
+       mov        AH, 10
+
+       mul        DH                  ; digitValue *= 10;
+       mov        DH,AH
+
+       pop        ecx
        dec        ecx                  ; digit--;
 
        jmp        while2
