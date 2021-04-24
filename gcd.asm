@@ -34,6 +34,7 @@ _start:  ; This is like the main
         ; Ask for the first user string
         call    readNumber
 
+        jmp     fin
 
 
 
@@ -76,72 +77,92 @@ getInt:
 	    MOV		ebp, esp            ; Make stack pointer = to the base pointer
 
         mov     ecx,[ebp+8] ; This is the string I hope
-        push    ecx
+        ;push    ecx
         ;call    printf
         ;add     esp, 4
 
 
 
+       ; mov     edx, ecx ; char* digit = string;
+
         mov     eax, 1  ; unsigned int digitValue = 1; ; TODO: start here and start converting everything to 32 bit....
-        push    eax
+        push    eax     ; 1
         mov     ebx, 0  ; unsigned int result = 0;
-        push    ebx
-        mov     eax, ebx ; char* digit = string;
+        push    ebx     ; 0
+        mov     edx, ecx ; char* digit = string;
 
 
     ; do func stuff
 
 while:
-        cmp     byte[ecx], 10
+        cmp     byte[edx], 10
         je      lastDigit
-        inc     ecx
+        inc     edx
         jmp     while
 
 
 lastDigit:
-        dec     ecx ; This should be the last digit
+        dec     edx ; This should be the last digit
         jmp     while2
 
 
 while2:
-        cmp     ecx, eax  ; while (digit >= string)
+        cmp     edx, ecx  ; while (digit >= string)
         jnge    break
 
-        cmp     byte[ecx], 32   ; if (*digit == ' ')
+        cmp     byte[edx], 32   ; if (*digit == ' ')
         je      break
 
-        cmp     byte[ecx], 48 ; if (*digit < '0')
+        cmp     byte[edx], 48 ; if (*digit < '0')
         jl      badNumber
-        cmp     byte[ecx], 57 ; if (*digit > '9')
+        cmp     byte[edx], 57 ; if (*digit > '9')
         jg      badNumber
 
 
 
         ;// use the MUL (dword) instruction here (unsigned multiply)
         ;// be careful to understand its operands and results
-       mov      AL, byte[ecx]
+       mov      AL, byte[edx]
        sub      AL, 48  ; (*digit - '0')
-       push     ecx
-
+       push     ecx     ; string is in ground
+       push     edx     ; digit is in ground
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; eax = digitvalue
+; ecx = string
+       ;pop        eax           ; digit value
+       ;mov        ecx, eax
+       ;push       eax
+       ;movzx      eax, AL       ; TODO: when you MUL, it only takes one arg and the second arg and stored in AL for 8 bit and different ones for each size each staring with AX ; eax = (*digit - '0')
+                                ; digit value
+
+       ;mul        ecx           ; (*digit - '0') * digitValue
 
 
 
-       movzx      eax, byte[ecx]        ; TODO: when you MUL, it only takes one arg and the second arg and stored in AL for 8 bit and different ones for each size each staring with AX (result)
 
-       movzx      ecx, DH       ; digitvalue
 
-       mul        ecx           ; (*digit - '0') * digitValue
 
-       mov        DL, byte[eax]       ; This is result i think       ; TODO: Something is wrong here
 
-       mov        AH, 10
+       ;pop        ebx            ; Result on poppped
 
-       mul        DH                  ; digitValue *= 10;
-       mov        DH,AH
+       ;mov        ebx, eax       ; This is result i think       ; TODO: Something is wrong here
 
-       pop        ecx
-       dec        ecx                  ; digit--;
+       ;push       ebx             ; result on on ground
+
+       ;pop        eax               ; On rise digitValue
+
+       ;mov        ecx, eax
+
+       ;mov        eax, 10
+
+       ;mul        ecx                  ; digitValue *= 10;
+
+       ;mov        ecx ,eax
+
+      ; mov        eax, ecx              ; digitValue *= 10; in the CORRECT spot register
+
+
+       dec        edx                  ; digit--;
 
        jmp        while2
 
