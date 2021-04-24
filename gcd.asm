@@ -33,7 +33,9 @@ global  _start
 _start:  ; This is like the main
         ; Ask for the first user string
         call    readNumber
-
+        push    ebx
+        mov     ebx, eax
+        call    readNumber
         jmp     fin
 
 
@@ -76,7 +78,11 @@ getInt:
 	    PUSH 	ebp ; Do this every time we make a new function
 	    MOV		ebp, esp            ; Make stack pointer = to the base pointer
 
-        mov     ecx,[ebp+8] ; This is the string I hope
+
+	    push    esi
+
+        mov     esi,[ebp+8] ; This is the string I hope
+        nop
         ;push    ecx
         ;call    printf
         ;add     esp, 4
@@ -85,57 +91,78 @@ getInt:
 
        ; mov     edx, ecx ; char* digit = string;
 
-        mov     eax, 1  ; unsigned int digitValue = 1; ; TODO: start here and start converting everything to 32 bit....
-        push    eax     ; 1
+        mov     ecx, 1  ; unsigned int digitValue = 1; ;
         mov     ebx, 0  ; unsigned int result = 0;
         push    ebx     ; 0
-        mov     edx, ecx ; char* digit = string;
-
+        mov     edx, esi ; char* digit = string;
+        mov     ebx, esi ; this one too
 
     ; do func stuff
 
 while:
-        cmp     byte[edx], 10
-        je      lastDigit
-        inc     edx
+        lodsb
+        cmp     AL, 10
+        jz      lastDigit
         jmp     while
 
 
 lastDigit:
-        dec     edx ; This should be the last digit
+        dec     esi  ; This should be the last digit
+        dec     esi
+        lodsb
+
         jmp     while2
 
 
 while2:
-        cmp     edx, ecx  ; while (digit >= string)
-        jnge    break
+     ;   cmp     AL, byte[ebx]  ; while (digit >= string)
+      ;  jnge    break
 
-        cmp     byte[edx], 32   ; if (*digit == ' ')
+        cmp     AL, 0   ; if (*digit == ' ') was 32
         je      break
 
-        cmp     byte[edx], 48 ; if (*digit < '0')
+        cmp     AL, 48 ; if (*digit < '0')
         jl      badNumber
-        cmp     byte[edx], 57 ; if (*digit > '9')
+        cmp     AL, 57 ; if (*digit > '9')
         jg      badNumber
 
 
 
         ;// use the MUL (dword) instruction here (unsigned multiply)
         ;// be careful to understand its operands and results
-       mov      AL, byte[edx]
+
        sub      AL, 48  ; (*digit - '0')
-       push     ecx     ; string is in ground
-       push     edx     ; digit is in ground
+       ;push     edx     ; digit is in ground
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; eax = digitvalue
 ; ecx = string
        ;pop        eax           ; digit value
-       ;mov        ecx, eax
-       ;push       eax
-       ;movzx      eax, AL       ; TODO: when you MUL, it only takes one arg and the second arg and stored in AL for 8 bit and different ones for each size each staring with AX ; eax = (*digit - '0')
+   ;    mov        ecx, eax
+    ;   push       eax           ; digit value ground
+        movzx      eax, AL       ; TODO: when you MUL, it only takes one arg and the second arg and stored in AL for 8 bit and different ones for each size each staring with AX ; eax = (*digit - '0')
                                 ; digit value
 
-       ;mul        ecx           ; (*digit - '0') * digitValue
+        mul        ecx           ; (*digit - '0') * digitValue
+        pop        ebx
+
+
+        mov        ebx, eax     ; this is result
+
+
+
+
+        mov        eax, 10      ; digitValue *= 10
+
+        mul        ecx
+
+        mov        ecx, eax     ;
+
+
+        dec         esi  ; This should be the last digit
+        dec         esi
+        lodsb     ; dec the pointer to $al char cursor
+
+        jmp        while2
 
 
 
@@ -143,28 +170,37 @@ while2:
 
 
 
-       ;pop        ebx            ; Result on poppped
 
-       ;mov        ebx, eax       ; This is result i think       ; TODO: Something is wrong here
 
-       ;push       ebx             ; result on on ground
+      ; pop        ebx            ; Result on poppped
 
-       ;pop        eax               ; On rise digitValue
+      ; mov        ebx, eax       ; This is result i think
 
-       ;mov        ecx, eax
+      ; push       ebx             ; result on on ground
 
-       ;mov        eax, 10
+      ; pop        eax               ; On rise digitValue
 
-       ;mul        ecx                  ; digitValue *= 10;
+      ; mov        ecx, eax
 
-       ;mov        ecx ,eax
+      ; mov        eax, 10
+
+      ; mul        ecx                  ; digitValue *= 10;
+
+      ; mov        ecx ,eax
 
       ; mov        eax, ecx              ; digitValue *= 10; in the CORRECT spot register
 
+       ;nop
 
-       dec        edx                  ; digit--;
+      ; push       eax
 
-       jmp        while2
+       ;pop        edx
+
+       ;dec        edx                  ; digit--;
+
+       ;nop
+
+       ;jmp        while2
 
       ; mov      AX, DL
        ;MUL      byte[DL], byte[DX]        ; (*digit - '0') * digitValue
@@ -178,12 +214,11 @@ while2:
 break:
 ; We get out of the while loop here
 ; TODO: put stuff here
-
         ; clean up clean up
         mov     esp , ebp   ; restore caller;s stack pointer
         pop     ebp ; restore original ebp
 
-
+        mov     eax, ebx    ; this is restore i hope
 
         ret
 
