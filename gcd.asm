@@ -32,10 +32,21 @@ global  _start
 
 _start:  ; This is like the main
         ; Ask for the first user string
-        call    readNumber
         push    ebx
-        mov     ebx, eax
+        push    ecx                 ; TODO: Need to fix overwriting values
         call    readNumber
+        pop     ecx
+        pop     ebx
+        mov     ebx, eax    ; ebx is a = readNumber();
+        nop
+        push    ebx
+        push    ecx
+        call    readNumber
+        pop     ecx
+        pop     ebx
+        mov     ecx, eax    ; ecx is b = readNumber();
+
+        nop
         jmp     fin
 
 
@@ -107,6 +118,7 @@ while:
 
 
 lastDigit:
+        pop     ebx           ; unload result for updating
         dec     esi  ; This should be the last digit
         dec     esi
         lodsb
@@ -134,16 +146,12 @@ while2:
        sub      AL, 48  ; (*digit - '0')
        ;push     edx     ; digit is in ground
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; eax = digitvalue
-; ecx = string
-       ;pop        eax           ; digit value
-   ;    mov        ecx, eax
-    ;   push       eax           ; digit value ground
+
+
         movzx      eax, AL       ; TODO: when you MUL, it only takes one arg and the second arg and stored in AL for 8 bit and different ones for each size each staring with AX ; eax = (*digit - '0')
                                 ; digit value
 
         mul        ecx           ; (*digit - '0') * digitValue
-        pop        ebx
 
 
         mov        ebx, eax     ; this is result
@@ -155,10 +163,10 @@ while2:
 
         mul        ecx
 
-        mov        ecx, eax     ;
+        mov        ecx, eax     ; Move the digitValue to the original place
 
 
-        dec         esi  ; This should be the last digit
+        dec         esi  ; Dec twice to move back a char as lodsb defaults to taking one char out no matter what
         dec         esi
         lodsb     ; dec the pointer to $al char cursor
 
@@ -167,57 +175,13 @@ while2:
 
 
 
-
-
-
-
-
-      ; pop        ebx            ; Result on poppped
-
-      ; mov        ebx, eax       ; This is result i think
-
-      ; push       ebx             ; result on on ground
-
-      ; pop        eax               ; On rise digitValue
-
-      ; mov        ecx, eax
-
-      ; mov        eax, 10
-
-      ; mul        ecx                  ; digitValue *= 10;
-
-      ; mov        ecx ,eax
-
-      ; mov        eax, ecx              ; digitValue *= 10; in the CORRECT spot register
-
-       ;nop
-
-      ; push       eax
-
-       ;pop        edx
-
-       ;dec        edx                  ; digit--;
-
-       ;nop
-
-       ;jmp        while2
-
-      ; mov      AX, DL
-       ;MUL      byte[DL], byte[DX]        ; (*digit - '0') * digitValue
-       ;add      byte[DL], AX            ; This is result i think
-       ;mov      AX, 10
-       ;mul      DX                  ; digitValue *= 10;
-
-       ;dec     ecx                      ; digit--;
-       ;jmp     while2
-
 break:
 ; We get out of the while loop here
 ; TODO: put stuff here
         ; clean up clean up
         mov     esp , ebp   ; restore caller;s stack pointer
         pop     ebp ; restore original ebp
-
+        nop
         mov     eax, ebx    ; this is restore i hope
 
         ret
